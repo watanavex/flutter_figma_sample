@@ -16,7 +16,7 @@ jobs:
         with:
           ref: ${{ github.base_ref }}
       - name: Setup Flutter
-        uses: ./.github/workflows/setup-flutter.yml
+        uses: ./.github/actions/setup-flutter
       - name: Run golden tests
         run: flutter test --update-goldens
       - name: Save snapshot
@@ -37,7 +37,7 @@ jobs:
           name: base-snapshot
           path: test/goldens/
       - name: Setup Flutter
-        uses: ./.github/workflows/setup-flutter.yml
+        uses: ./.github/actions/setup-flutter
       - name: Run golden tests
         continue-on-error: true
         id: golden-tests
