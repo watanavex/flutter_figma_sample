@@ -1,0 +1,56 @@
+name: Snapshot Diff
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  base-snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.base_ref }}
+      - name: Setup Flutter
+        uses: ./.github/workflows/setup-flutter.yml
+      - name: Run golden tests
+        run: flutter test --update-goldens
+      - name: Save snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: base-snapshot
+          path: test/goldens/
+
+  head-snapshot:
+    runs-on: ubuntu-latest
+    needs: base-snapshot
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: base-snapshot
+          path: test/goldens/
+      - name: Setup Flutter
+        uses: ./.github/workflows/setup-flutter.yml
+      - name: Run golden tests
+        continue-on-error: true
+        id: golden-tests
+        run: flutter test
+      - name: Upload diff
+        if: ${{ steps.golden-tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: diff-snapshot
+          path: test/failures/
+      - name: Upload snapshot
+        if: ${{ steps.golden-tests.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: head-snapshot
+          path: test/goldens/
