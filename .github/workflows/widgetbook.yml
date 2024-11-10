@@ -1,0 +1,37 @@
+name: Widgetbook
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: kuhnroyal/flutter-fvm-config-action@v3
+      - name: Setup flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ steps.fvm-config-action.outputs.FLUTTER_VERSION }}
+          channel: ${{ steps.fvm-config-action.outputs.FLUTTER_CHANNEL }}
+          cache: true
+      - name: Bootstrap App
+        run: flutter pub get
+      - name: Build widgetbook
+        working-directory: widgetbook
+        run: |
+          flutter pub get
+          flutter pub run build_runner build --delete-conflicting-outputs
+          flutter build web -t lib/main.dart
+      - name: Install Widgetbook CLI
+        run: dart pub global activate widgetbook_cli
+      - name: Push Widgetbook Build
+        working-directory: widgetbook
+        run: widgetbook cloud build push --api-key ${{ secrets.WIDGETBOOK_API_KEY }}      
