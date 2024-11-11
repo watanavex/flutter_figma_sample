@@ -53,8 +53,8 @@ jobs:
         run: |
           curl -X POST \
             -H 'X-FIGMA-TOKEN: ${{ secrets.FIGMA_API_TOKEN }}' \
-            -H "Content-Type: application/json" 'https://api.figma.com/v1/files/${{ env.FIGMA_FILE_KEY }}/comments' \
-            -d '{"message":"UIに差分があります。チェックしてください。\n${{ github.repository }}/actions/runs/${{ github.run_id }}"}'
+            -H "Content-Type: application/json" 'https://api.figma.com/v1/files/${{ vars.FIGMA_FILE_KEY }}/comments' \
+            -d '{"message":"UIに差分があります。チェックしてください。\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'
       - name: Upload snapshot
         if: ${{ steps.golden-tests.outcome == 'success' }}
         uses: actions/upload-artifact@v4
