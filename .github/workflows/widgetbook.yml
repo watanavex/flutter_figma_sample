@@ -15,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
       - name: Setup Flutter
         uses: ./.github/actions/setup-flutter
       - name: Build widgetbook
@@ -27,4 +29,4 @@ jobs:
         run: dart pub global activate widgetbook_cli
       - name: Push Widgetbook Build
         working-directory: widgetbook
-        run: widgetbook cloud build push --api-key ${{ secrets.WIDGETBOOK_API_KEY }}      
+        run: widgetbook cloud build push --commit ${{ github.event.pull_request.head.sha }} --api-key ${{ secrets.WIDGETBOOK_API_KEY }}
